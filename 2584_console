@@ -1,0 +1,187 @@
+import random
+'''grid = [[0,0,0,0],
+           [0,0,0,0],
+           [0,0,0,0],
+           [0,0,0,0]]'''
+lst = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584]
+
+# print(grid)
+# grid_new = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
+
+
+def position_grid(grid):
+    lst1 = []
+    for i, j in enumerate(grid):
+        for k, l in enumerate(j):
+            if l == 0:
+                lst1.append([i, k])
+    return lst1
+
+
+def generate_1(grid, k=2):
+    for i in range(0, k):
+        if position_grid(grid) == []:
+            return grid
+        else:
+            pos = random.choice(position_grid(grid))
+            grid[pos[0]][pos[1]] = 1
+    return grid
+
+def reverse(grid):
+    new_mat = []
+    for i in range(4):
+        new_mat.append([])
+        for j in range(4):
+            new_mat[i].append(grid[i][3 - j])
+    return new_mat
+
+
+def transp(grid):
+    new_mat = [[0 for i in range(4)] for i in range(4)]
+    for i in range(4):
+        for j in range(4):
+            new_mat[i][j] = grid[j][i]
+    return new_mat
+
+
+def compress(grid):
+    new_mat = [[0 for i in range(4)] for i in range(4)]
+    for i in range(0, 4):
+        pos_new = 0
+        for j in range(0, 4):
+            if grid[i][j] != 0:
+                new_mat[i][pos_new] = grid[i][j]
+                pos_new += 1
+    return new_mat
+
+
+def merge(grid):
+    for i in range(0, 4):
+        for j in range(0, 3):
+            if grid[i][j] == 1 and grid[i][j+1] == 1:
+                grid[i][j] += grid[i][j+1]
+                grid[i][j+1] = 0
+            elif grid[i][j] in lst and grid[i][j+1] == lst[lst.index(grid[i][j])+1] or grid[i][j] in lst and grid[i][j+1] == lst[lst.index(grid[i][j])-1]:
+                grid[i][j] += grid[i][j+1]
+                grid[i][j+1] = 0
+    return grid
+
+
+
+
+def moveLeft(grid):
+    st0 = compress(grid)
+    st1 = merge(st0)
+    st2 = compress(st1)
+    st3 = generate_1(st2, k=1)
+    return st3
+
+
+def moveRight(grid):
+    st0 = reverse(grid)
+    st1 = compress(st0)
+    st2 = merge(st1)
+    st3 = compress(st2)
+    st4 = reverse(st3)
+    st5 = generate_1(st4, k=1)
+    return st5
+
+
+def moveUp(grid):
+    st0 = transp(grid)
+    st1 = compress(st0)
+    st2 = merge(st1)
+    st3 = compress(st2)
+    st4 = transp(st3)
+    st5 = generate_1(st4, k=1)
+    return st5
+
+
+def moveDown(grid):
+    st0 = transp(grid)
+    st = reverse(st0)
+    st1 = compress(st)
+    st2 = merge(st1)
+    st3 = compress(st2)
+    st3 = reverse(st3)
+    st4 = transp(st3)
+    st5 = generate_1(st4, k=1)
+    return st5
+
+
+def game_status(grid):
+    # if any cell contains 2584 we win
+
+    for i in range(4):
+        for j in range(4):
+            if (grid[i][j] == 2584):
+                return 'WON'
+
+    # if atleast 1 empty tile is left, game isn't over
+
+    for i in range(4):
+        for j in range(4):
+            if (grid[i][j] == 0):
+                return 'GAME NOT OVER'
+
+    # if no cell is empty now but if after any move, any two cells gets merged and create an empty cell,game isn't over
+    for i in range(4):
+        for j in range(3):
+            if (grid[i][j] == 1 and grid[i][j + 1] == 1):
+                return 'GAME NOT OVER'
+
+    for i in range(3):
+        for j in range(4):
+            if (grid[i][j] == 1 and grid[i + 1][j] == 1):
+                return 'GAME NOT OVER'
+
+    for i in range(4):
+        for j in range(3):
+            if (grid[i][j] in lst and grid[i][j + 1] == lst[lst.index(grid[i][j]) + 1] or grid[i][j] in lst and
+                  grid[i][j + 1] == lst[lst.index(grid[i][j]) - 1]):
+                return 'GAME NOT OVER'
+
+    for i in range(3):
+        for j in range(4):
+            if (grid[i][j] in lst and grid[i+1][j] == lst[lst.index(grid[i][j]) + 1] or grid[i][j] in lst and
+                  grid[i+1][j] == lst[lst.index(grid[i][j]) - 1]):
+                return 'GAME NOT OVER'
+
+    # else we have lost the game
+
+    return 'LOST'
+
+
+def play(grid):
+    grid1 = generate_1(grid, k=2)
+    print(grid1)
+    while True:
+        status = game_status(grid1)
+        if status == 'WON':
+            print('won')
+            break
+        elif status == 'LOST':
+            print('lost')
+            break
+        elif status == 'GAME NOT OVER':
+            user_int = input()
+            if user_int == 'quit':
+                break
+            elif user_int == 'l':
+                grid1 = moveLeft(grid1)
+                print(grid1)
+            elif user_int == 'r':
+                grid1 = moveRight(grid1)
+                print(grid1)
+            elif user_int == 'u':
+                grid1 = moveUp(grid1)
+                print(grid1)
+            elif user_int == 'd':
+                grid1 = moveDown(grid1)
+                print(grid1)
+
+
+play([[0, 0, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0]])
